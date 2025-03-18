@@ -4,9 +4,10 @@ from docx import Document
 import pdfkit
 import os
 
-# OpenAI API Key (Load from environment variable)
+# Load OpenAI API Key from environment variable
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
+# Streamlit App Title
 st.title("🚀 AI Resume Tailoring Tool")
 
 # File uploader for resume template
@@ -19,18 +20,22 @@ job_description = st.text_area("Paste the Job Description")
 def generate_ai_suggestions(job_description, section):
     prompt = f"Generate a professional {section} section based on this job description:\n\n{job_description}"
     
+    openai.api_key = OPENAI_API_KEY  # Ensure API key is set
+
     response = openai.ChatCompletion.create(
         model="gpt-4",
-        messages=[{"role": "user", "content": prompt}],
-        api_key=OPENAI_API_KEY
+        messages=[
+            {"role": "system", "content": "You are a resume-writing assistant."},
+            {"role": "user", "content": prompt}
+        ]
     )
 
     return response["choices"][0]["message"]["content"].strip()
 
-# If job description is provided, generate AI suggestions
+# If job description and file are uploaded, generate AI suggestions
 if job_description and uploaded_file:
     st.subheader("AI-Suggested Resume Content")
-    
+
     experience_ai = generate_ai_suggestions(job_description, "Experience")
     skills_ai = generate_ai_suggestions(job_description, "Skills")
     projects_ai = generate_ai_suggestions(job_description, "Projects")
